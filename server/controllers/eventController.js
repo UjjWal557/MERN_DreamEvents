@@ -54,6 +54,7 @@ exports.createEvent = async (req, res) => {
 };
 
 exports.updateEvent = async (req, res) => {
+    const { title, description, date, location, category, totalSeats, ticketPrice, imageUrl } = req.body;
     try {
         const event = await Event.findByIdAndUpdate(req.params.id, {
             title,
