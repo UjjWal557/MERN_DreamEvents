@@ -1,6 +1,6 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -12,6 +12,19 @@ const Login = () => {
 
     const { login, verifyOTP } = useContext(AuthContext);
     const navigate = useNavigate();
+    const location = useLocation();
+
+    useEffect(() => {
+        if (location.state) {
+            if (location.state.email) {
+                setEmail(location.state.email);
+            }
+            if (location.state.needsOTP) {
+                setShowOTP(true);
+                setError('Account registration successful. A verification OTP has been sent to your email.');
+            }
+        }
+    }, [location.state]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -43,7 +56,7 @@ const Login = () => {
         <div className="max-w-md mx-auto mt-20 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
             <div className="text-center mb-8">
                 <h2 className="text-3xl font-extrabold text-gray-900 mb-2">Welcome Back</h2>
-                <p className="text-gray-500">Sign in to your Eventora account</p>
+                <p className="text-gray-500">Sign in to your DreamEvents account</p>
             </div>
 
             {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-center shadow-inner border border-red-100">{error}</div>}

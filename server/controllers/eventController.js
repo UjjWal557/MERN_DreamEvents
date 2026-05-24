@@ -9,6 +9,15 @@ exports.getAllEvents = async (req, res) => {
         if (req.query.location) {
             filters.location = req.query.location;
         }
+        if (req.query.search) {
+            const searchRegex = { $regex: req.query.search, $options: 'i' };
+            filters.$or = [
+                { title: searchRegex },
+                { category: searchRegex },
+                { location: searchRegex },
+                { description: searchRegex }
+            ];
+        }
 
         const events = await Event.find(filters);
         res.json(events);

@@ -1,7 +1,7 @@
 import React, {useState} from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { FaTickectAlt } from "react-icons/fa";
+import { FaTicketAlt } from "react-icons/fa";
 
 const Navbar = () => {
     const { user, logout } = React.useContext(AuthContext);
@@ -14,11 +14,11 @@ const Navbar = () => {
 
     return (
 
-        <nav className="ng-gray-900 shadow-lg">
-            <div className="container mx-auto px-4>">
+        <nav className="bg-gray-900 shadow-lg">
+            <div className="container mx-auto px-4">
                 <div className="flex flex-col md:flex-row items-center justify-between py-4 gap-4">
                     <Link to="/" className="text-white text-2xl font-bold flex items-center gap-2">
-                        <FaTickectAlt />
+                        <FaTicketAlt />
                         DreamEvents
                     </Link>
 
