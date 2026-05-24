@@ -45,7 +45,7 @@ const Login = () => {
                 setShowOTP(true);
                 setError('Account not verified. A new OTP has been sent to your email.');
             } else {
-                setError(err.message || err);
+                setError(err.message || 'An unexpected error occurred. Please try again.');
             }
         } finally {
             setLoading(false);

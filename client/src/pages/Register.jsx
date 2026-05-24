@@ -25,7 +25,7 @@ const Register = () => {
                 navigate('/login', { state: { email, needsOTP: true } });
             }, 3000);
         } catch (err) {
-            setError(err.message || err);
+            setError(err.message || 'An unexpected error occurred. Please try again.');
         } finally {
             setLoading(false);
         }

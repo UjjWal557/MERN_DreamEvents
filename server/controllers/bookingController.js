@@ -57,7 +57,7 @@ exports.bookEvent = async (req, res) => {
 
 exports.confirmBooking = async (req, res) => {
     const paymentStatus = req.body.paymentStatus;
-    if (!['paid', 'unpaid'].includes(paymentStatus)) {
+    if (paymentStatus && !['paid', 'unpaid'].includes(paymentStatus)) {
         return res.status(400).json({ message: 'Invalid payment status' });
     }
 
@@ -100,7 +100,7 @@ exports.cancelBooking = async (req, res) => {
         if (!booking) { 
             return res.status(404).json({ message: 'Booking not found' });
         }
-        if (booking.userId.toString() !== req.user._id.toString()) {
+        if (booking.userId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
             return res.status(403).json({ message: 'You can only cancel your own bookings' });
         }
         if (booking.status === 'cancelled') {
