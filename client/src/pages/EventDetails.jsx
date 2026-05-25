@@ -16,10 +16,31 @@ const EventDetails = () => {
     const [otp, setOtp] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [timer, setTimer] = useState(0);
+    const [canResend, setCanResend] = useState(false);
 
     useEffect(() => {
         fetchEventDetails();
     }, [id]);
+
+    useEffect(() => {
+        let interval = null;
+        if (otpSent && timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prevTimer) => prevTimer - 1);
+            }, 1000);
+        } else if (timer === 0) {
+            setCanResend(true);
+            clearInterval(interval);
+        }
+        return () => clearInterval(interval);
+    }, [otpSent, timer]);
+
+    const formatTime = (seconds) => {
+        const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+        const s = (seconds % 60).toString().padStart(2, '0');
+        return `${m}:${s}`;
+    };
 
     const fetchEventDetails = async () => {
         try {
@@ -43,6 +64,8 @@ const EventDetails = () => {
         try {
             await api.post('/bookings/send-otp');
             setOtpSent(true);
+            setTimer(120); // 2 minutes countdown
+            setCanResend(false);
             setSuccess('Verification OTP has been sent to your registered email.');
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to send OTP.');
@@ -57,14 +80,63 @@ const EventDetails = () => {
         setError('');
         setSuccess('');
         try {
-            await api.post('/bookings', { eventId: id, otp });
-            setSuccess('Booking completed successfully! Redirecting to dashboard...');
-            setTimeout(() => {
-                navigate('/dashboard');
-            }, 3000);
+            const { data } = await api.post('/bookings', { eventId: id, otp });
+
+            if (data.requiresPayment) {
+                const options = {
+                    key: data.razorpayKeyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_dummyKeyId',
+                    amount: data.razorpayOrder.amount,
+                    currency: data.razorpayOrder.currency,
+                    name: "DreamEvents",
+                    description: `Booking for ${event.title}`,
+                    order_id: data.razorpayOrder.id,
+                    handler: async function (response) {
+                        setBookingLoading(true);
+                        try {
+                            const verifyRes = await api.post('/bookings/verify-payment', {
+                                razorpay_order_id: response.razorpay_order_id,
+                                razorpay_payment_id: response.razorpay_payment_id,
+                                razorpay_signature: response.razorpay_signature,
+                                bookingId: data.bookingId
+                            });
+                            if (verifyRes.data.success) {
+                                setSuccess('Payment successful and booking confirmed! Redirecting...');
+                                setTimeout(() => {
+                                    navigate('/dashboard');
+                                }, 2500);
+                            } else {
+                                setError('Payment verification failed.');
+                            }
+                        } catch (verErr) {
+                            setError(verErr.response?.data?.message || 'Error verifying payment signature.');
+                        } finally {
+                            setBookingLoading(false);
+                        }
+                    },
+                    prefill: {
+                        name: user?.name || '',
+                        email: user?.email || '',
+                    },
+                    theme: {
+                        color: "#111827"
+                    },
+                    modal: {
+                        ondismiss: function () {
+                            setError('Payment process was cancelled.');
+                            setBookingLoading(false);
+                        }
+                    }
+                };
+                const rzp = new window.Razorpay(options);
+                rzp.open();
+            } else {
+                setSuccess('Booking completed successfully! Redirecting to dashboard...');
+                setTimeout(() => {
+                    navigate('/dashboard');
+                }, 3000);
+            }
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to confirm booking.');
-        } finally {
             setBookingLoading(false);
         }
     };
@@ -182,6 +254,22 @@ const EventDetails = () => {
                             >
                                 {bookingLoading ? 'Confirming...' : 'Verify & Confirm Booking'}
                             </button>
+                            <div className="flex flex-col items-center gap-2 pt-2">
+                                {!canResend ? (
+                                    <p className="text-xs text-gray-500 font-medium">
+                                        Resend OTP in <span className="font-bold text-gray-700">{formatTime(timer)}</span>
+                                    </p>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSendOTP}
+                                        disabled={bookingLoading}
+                                        className="text-xs font-bold text-blue-600 hover:text-blue-800 disabled:text-gray-400 disabled:cursor-not-allowed transition cursor-pointer"
+                                    >
+                                        Resend OTP
+                                    </button>
+                                )}
+                            </div>
                         </form>
                     )}
                 </div>

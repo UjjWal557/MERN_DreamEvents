@@ -32,7 +32,7 @@ exports.registerUser = async (req, res) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         console.log(`OTP for ${email}: ${otp}`);
         await OTP.create({ email, otp, action: 'account_verification' }); // create OTP entry in DB
-        await sendOTPEmail(email, otp, 'account_verification'); // send OTP email for account verification
+        sendOTPEmail(email, otp, 'account_verification'); // send OTP email for account verification
         res.status(201).json({ 
             message: 'User registered successfully. Please check your email for OTP to verify your account.',
             email: user.email
@@ -60,7 +60,7 @@ exports.loginUser = async (req, res) => {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             await OTP.deleteMany({ email, action: 'account_verification' }); // delete any existing OTPs for this email and action
             await OTP.create({ email, otp, action: 'account_verification' });
-            await sendOTPEmail(email, otp, 'account_verification'); // resend OTP email for account verification
+            sendOTPEmail(email, otp, 'account_verification'); // resend OTP email for account verification
             return res.status(403).json({ message: 'Account not verified. A new OTP has been sent to your email.' });
         }
 

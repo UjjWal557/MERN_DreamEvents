@@ -8,16 +8,7 @@ const Booking = require('./models/Booking');
 dotenv.config();
 
 const users = [
-    { name: 'Admin User', email: 'admin@dreamevents.com', password: 'password123', role: 'admin' },
-    { name: 'Demo User', email: 'user@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Alice Smith', email: 'alice@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Bob Johnson', email: 'bob@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Charlie Dave', email: 'charlie@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Diana Prince', email: 'diana@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Ethan Hunt', email: 'ethan@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Fiona Gallagher', email: 'fiona@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'George Miller', email: 'george@dreamevents.com', password: 'password123', role: 'user' },
-    { name: 'Hannah Montana', email: 'hannah@dreamevents.com', password: 'password123', role: 'user' }
+    { name: 'Admin User', email: 'admin@dreamevents.com', password: 'password123', role: 'admin' }
 ];
 
 const events = [
@@ -25,7 +16,7 @@ const events = [
         title: 'React & Node.js Developer Retreat',
         description: 'Join us for a 3-day deep dive into modern full-stack web development. Perfect for developers looking to take their skills to the next level.',
         date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000), // 10 days from now
-        location: 'Silicon Valley Innovation Center, CA',
+        location: 'Ganpat University, Mehsana',
         category: 'Technology',
         totalSeats: 200,
         ticketPrice: 0,
@@ -35,7 +26,7 @@ const events = [
         title: 'Neon Nights EDM Festival',
         description: 'Experience an unforgettable night of EDM, techno, and dazzling light shows with top DJs from around the globe.',
         date: new Date(Date.now() + 20 * 24 * 60 * 60 * 1000), // 20 days from now
-        location: 'Grand Arena, New York',
+        location: 'Ganpat University, Mehsana',
         category: 'Music',
         totalSeats: 500,
         ticketPrice: 1500,
@@ -45,7 +36,7 @@ const events = [
         title: 'Global Leaders Business Summit',
         description: 'A premium gathering of CEOs, founders, and investors discussing the future of global commerce and AI integration.',
         date: new Date(Date.now() + 15 * 24 * 60 * 60 * 1000), // 15 days from now
-        location: 'The Ritz-Carlton, London',
+        location: 'Ganpat University, Mehsana',
         category: 'Business',
         totalSeats: 150,
         ticketPrice: 5000,
@@ -55,7 +46,7 @@ const events = [
         title: 'Modern Art Expo 2024',
         description: 'Discover breathtaking contemporary and modern arts from underground and trending artists this season.',
         date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
-        location: 'Downtown Art Museum',
+        location: 'Ganpat University, Mehsana',
         category: 'Art',
         totalSeats: 300,
         ticketPrice: 200,
@@ -65,7 +56,7 @@ const events = [
         title: 'Startup Pitch & Pitch Competition',
         description: 'Watch 25 startups pitch for 1 million dollars in seed funding. Great networking for entrepreneurs and angel investors.',
         date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
-        location: 'Convention Center, Miami',
+        location: 'Ganpat University, Mehsana',
         category: 'Business',
         totalSeats: 250,
         ticketPrice: 100,
@@ -75,7 +66,7 @@ const events = [
         title: 'Cloud Computing Architecture Seminar',
         description: 'A purely technical breakdown of scalable cloud solutions, multi-region routing, and serverless compute processing.',
         date: new Date(Date.now() + 12 * 24 * 60 * 60 * 1000), // 12 days from now
-        location: 'Tech Hub, Seattle',
+        location: 'Ganpat University, Mehsana',
         category: 'Technology',
         totalSeats: 100,
         ticketPrice: 600,
@@ -103,8 +94,7 @@ const seedDatabase = async () => {
 
         const createdUsers = await User.insertMany(hashedUsers);
         const adminUser = createdUsers.find(u => u.role === 'admin');
-        const normalUsers = createdUsers.filter(u => u.role === 'user');
-        console.log(`👤 Created ${createdUsers.length} total dummy users.`);
+        console.log(`👤 Created ${createdUsers.length} total admin user.`);
 
         // Link events to admin and map image to imageUrl
         const eventsWithAdmin = events.map(e => {
@@ -118,55 +108,12 @@ const seedDatabase = async () => {
         });
 
         const createdEvents = await Event.insertMany(eventsWithAdmin);
-        console.log(`🎉 Created ${createdEvents.length} distinct events with Unsplash images.`);
-
-        // Generate Bookings Data
-        const bookingsData = [];
-
-        for (const event of createdEvents) {
-            // Assign 3-6 random users to each event
-            const randomCount = Math.floor(Math.random() * 4) + 3;
-            // Shuffle and pick random users
-            const shuffledUsers = [...normalUsers].sort(() => 0.5 - Math.random());
-            const selectedUsers = shuffledUsers.slice(0, randomCount);
-
-            for (const user of selectedUsers) {
-                // Randomize statuses
-                const statuses = ['pending', 'confirmed', 'cancelled'];
-                const status = statuses[Math.floor(Math.random() * statuses.length)];
-
-                let paymentStatus = 'unpaid';
-                if (status === 'confirmed' && event.ticketPrice > 0) {
-                    // Usually confirmed tickets are marked paid (90% of the time)
-                    paymentStatus = Math.random() > 0.1 ? 'paid' : 'unpaid';
-                } else if (event.ticketPrice === 0) {
-                    paymentStatus = 'paid';
-                }
-
-                bookingsData.push({
-                    userId: user._id,
-                    eventId: event._id,
-                    status: status,
-                    paymentStatus: paymentStatus,
-                    amount: event.ticketPrice
-                });
-
-                // Deduct available seats specifically for confirmed tickets!
-                if (status === 'confirmed') {
-                    event.availableSeats -= 1;
-                    await event.save();
-                }
-            }
-        }
-
-        await Booking.insertMany(bookingsData);
-        console.log(`🎫 Inserted ${bookingsData.length} randomized dummy bookings (confirmed, pending, cancelled, paid, not_paid).`);
+        console.log(`🎉 Created ${createdEvents.length} distinct events at Ganpat University, Mehsana.`);
 
         console.log('\n🚀 Database seeded successfully!');
         console.log('-------------------------------------------');
         console.log('Admin Email: admin@dreamevents.com');
-        console.log('User Email:  user@dreamevents.com');
-        console.log('Password for all users: password123');
+        console.log('Password:    password123');
         console.log('-------------------------------------------\n');
 
         process.exit();

@@ -1,4 +1,5 @@
 const Event = require('../models/Event');
+const Booking = require('../models/Booking');
 
 exports.getAllEvents = async (req, res) => {
     try {
@@ -65,6 +66,9 @@ exports.createEvent = async (req, res) => {
 exports.updateEvent = async (req, res) => {
     const { title, description, date, location, category, totalSeats, ticketPrice, imageUrl } = req.body;
     try {
+        const occupiedSeats = await Booking.countDocuments({ eventId: req.params.id, status: 'confirmed' });
+        const availableSeats = Math.max(0, totalSeats - occupiedSeats);
+
         const event = await Event.findByIdAndUpdate(req.params.id, {
             title,
             description,
@@ -72,6 +76,7 @@ exports.updateEvent = async (req, res) => {
             location,
             category,
             totalSeats,
+            availableSeats,
             ticketPrice,
             imageUrl
         }, { new: true });

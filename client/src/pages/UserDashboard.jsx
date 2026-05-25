@@ -5,24 +5,42 @@ import api from '../utils/axios';
 import { FaTicketAlt, FaCalendarAlt, FaMapMarkerAlt, FaSignOutAlt, FaUser } from 'react-icons/fa';
 
 const UserDashboard = () => {
-    const { user, logout } = useContext(AuthContext);
+    const { user, logout, loading: authLoading } = useContext(AuthContext);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
+        if (authLoading) return;
         if (!user) {
             navigate('/login');
             return;
         }
         fetchMyBookings();
-    }, [user]);
+    }, [user, authLoading]);
 
     const fetchMyBookings = async () => {
         try {
             const { data } = await api.get('/bookings/my');
-            setBookings(data);
+            const sortedBookings = [...data].sort((a, b) => {
+                const statusOrder = { pending: 0, confirmed: 1, cancelled: 2 };
+                const valA = statusOrder[a.status] !== undefined ? statusOrder[a.status] : 3;
+                const valB = statusOrder[b.status] !== undefined ? statusOrder[b.status] : 3;
+
+                if (valA !== valB) {
+                    return valA - valB;
+                }
+
+                if (a.status === 'confirmed') {
+                    const dateA = a.eventId?.date ? new Date(a.eventId.date).getTime() : 0;
+                    const dateB = b.eventId?.date ? new Date(b.eventId.date).getTime() : 0;
+                    return dateA - dateB;
+                }
+
+                return 0;
+            });
+            setBookings(sortedBookings);
         } catch (err) {
             console.error('Error fetching bookings:', err);
             setError('Failed to fetch your bookings.');
@@ -41,6 +59,7 @@ const UserDashboard = () => {
         }
     };
 
+    if (authLoading) return <div className="text-center py-20 text-xl font-semibold">Checking credentials...</div>;
     if (!user) return null;
 
     return (
@@ -101,16 +120,14 @@ const UserDashboard = () => {
                                         </div>
                                         {/* Status badges */}
                                         <div className="flex flex-col gap-1 items-end">
-                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-                                                booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border border-green-200' :
-                                                booking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
-                                                'bg-red-50 text-red-700 border border-red-200'
-                                            }`}>
+                                            <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${booking.status === 'confirmed' ? 'bg-green-50 text-green-700 border border-green-200' :
+                                                    booking.status === 'pending' ? 'bg-yellow-50 text-yellow-700 border border-yellow-200' :
+                                                        'bg-red-50 text-red-700 border border-red-200'
+                                                }`}>
                                                 {booking.status}
                                             </span>
-                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                                                booking.paymentStatus === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
-                                            }`}>
+                                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${booking.paymentStatus === 'paid' ? 'bg-blue-50 text-blue-700 border border-blue-100' : 'bg-orange-50 text-orange-700 border border-orange-100'
+                                                }`}>
                                                 {booking.paymentStatus}
                                             </span>
                                         </div>

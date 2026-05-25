@@ -23,6 +23,15 @@ const bookingSchema = new mongoose.Schema({
     amount:{
         type: Number,
         required: true
+    },
+    razorpayOrderId: {
+        type: String
+    },
+    razorpayPaymentId: {
+        type: String
+    },
+    razorpaySignature: {
+        type: String
     }
 }, {timestamps: true });
 
