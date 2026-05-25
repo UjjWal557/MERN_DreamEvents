@@ -1,15 +1,20 @@
-const { Resend } = require('resend');
+const nodemailer = require('nodemailer');
 const dotenv = require('dotenv');
 dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+    },
+});
 
-// Sender address — while using Resend's free shared domain (no custom domain required)
-const FROM_ADDRESS = 'DreamEvents <onboarding@resend.dev>';
+const FROM_ADDRESS = `DreamEvents <${process.env.EMAIL_USER}>`;
 
 const sendBookingEmail = async (userEmail, userName, eventTitle) => {
     try {
-        await resend.emails.send({
+        await transporter.sendMail({
             from: FROM_ADDRESS,
             to: userEmail,
             subject: `Booking Confirmed: ${eventTitle}`,
@@ -38,7 +43,7 @@ const sendOTPEmail = async (userEmail, otp, type) => {
 
         console.log(`Booking OTP for ${userEmail}: ${otp}`);
 
-        await resend.emails.send({
+        await transporter.sendMail({
             from: FROM_ADDRESS,
             to: userEmail,
             subject: title,
