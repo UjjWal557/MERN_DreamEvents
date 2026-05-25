@@ -4,6 +4,16 @@ DreamEvents is a full-stack MERN application that allows users to discover, regi
 
 This is my first full-stack MERN project!
 
+🔗 **Live Demo:** [mern-dream-events.vercel.app](https://mern-dream-events.vercel.app/)
+
+> [!IMPORTANT]
+> **Email/OTP Limitation on Live Demo:**
+> The backend server is hosted on Render's free tier, which blocks outbound SMTP ports (465/587). Because the project is currently configured to use **Nodemailer (Gmail SMTP)**, OTP emails will **not** be delivered on the live website.
+>
+> To test the email authentication and booking flow:
+> 1. Run the project **locally** and configure your own SMTP credentials in the `.env` file, or
+> 2. Swap the active provider in `server/utils/email.js` to **Resend** (Option B) for your live deployment.
+
 ## Features
 
 - **User Authentication**: Secure sign-up and login using JSON Web Tokens (JWT) and bcrypt password hashing.
@@ -15,8 +25,10 @@ This is my first full-stack MERN project!
   - **User**: Browse events, submit booking requests using OTP, track statuses on a personal dashboard, and cancel bookings.
 - **Event Management**: Create free or paid events with descriptions, external image URLs, categories, dates, and seating capacity.
 - **Smart Booking Flow**:
+  - Mandatory 2FA OTP to authorize a booking request.
   - All booking requests enter a **Pending** queue for Admin verification.
   - Seating capacity updates and validates automatically to prevent overbooking.
+- **Payment Integration**: Built-in payment gateway using **Razorpay** (test mode keys) for secure paid event ticketing.
 - **Admin Analytics Panel**: Track live statistics directly on the dashboard, including:
   - Pending Requests count
   - Total Revenue generated
@@ -48,6 +60,10 @@ Go to the `server/` directory, create a `.env` file, and fill in these keys:
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=supersecretjwtkey_eventora
+
+# Razorpay Credentials (test mode)
+RAZORPAY_KEY_ID=your_razorpay_key_id
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret
 
 # Gmail Credentials (for Nodemailer Option A)
 EMAIL_USER=your_gmail_address
