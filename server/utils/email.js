@@ -1,10 +1,8 @@
 const dotenv = require('dotenv');
 dotenv.config();
 
-// ==========================================
-// OPTION A: Nodemailer (Gmail SMTP) - ACTIVE
-// Use this if hosting on a platform that does NOT block SMTP ports (e.g., Vercel, Localhost, or paid hosts)
-// ==========================================
+// Nodemailer
+// Use this if hosting on a platform that does NOT block SMTP ports
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -69,12 +67,9 @@ const sendOTPEmail = async (userEmail, otp, type) => {
     }
 };
 
-
-// ==========================================
-// OPTION B: Resend (HTTP API) - COMMENTED OUT
-// Use this if hosting on Render/Railway free tiers (as they block SMTP ports)
-// Note: In sandbox mode, you can only send to your registered Resend email address.
-// ==========================================
+//Resend
+// Use this if hosting on Render free tiers (as they block SMTP ports)
+// Note: In sandbox mode, we can only send to our registered Resend email address.
 /*
 const { Resend } = require('resend');
 const resend = new Resend(process.env.RESEND_API_KEY);

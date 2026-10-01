@@ -4,7 +4,7 @@ DreamEvents is a full-stack MERN application that allows users to discover, regi
 
 This is my first full-stack MERN project!
 
-🔗 **Live Demo:** [mern-dream-events.vercel.app](https://mern-dream-events.vercel.app/) *(Note: Since the backend is hosted on a free Render instance, the initial load may take up to a minute to spin up).*
+🔗 **Live Demo:** [mern-dream-events.vercel.app](https://mern-dream-events.vercel.app/) *(Note: Since the backend is hosted on a free Render server, the initial load may take up to a minute to load).*    
 
 > [!IMPORTANT]
 > **Email/OTP Limitation on Live Demo:**

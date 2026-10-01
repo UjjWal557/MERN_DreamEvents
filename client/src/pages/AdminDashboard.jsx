@@ -22,7 +22,7 @@ const AdminDashboard = () => {
             navigate('/login');
             return;
         }
-        fetchData();
+        fetchData();    
     }, [user, navigate, authLoading]);
 
     const fetchData = async () => {
