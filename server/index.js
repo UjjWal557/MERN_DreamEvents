@@ -29,10 +29,39 @@ app.use(cors({
 
 app.use(express.json());
 
+// Health check route for uptime monitoring & Render keep-alive
+app.get(['/api/health', '/health'], (req, res) => {
+    res.status(200).json({
+        status: 'ok',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        message: 'Server is active and healthy'
+    });
+});
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
+
+const setupKeepAlive = (port) => {
+    const SEVEN_MINUTES = 7 * 60 * 1000;
+    
+    setInterval(async () => {
+        try {
+            // Render automatically sets RENDER_EXTERNAL_URL in production.
+            // Falls back to SERVER_URL or localhost if defined.
+            const baseUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL || `http://localhost:${port}`;
+            const healthUrl = `${baseUrl.replace(/\/$/, '')}/api/health`;
+            
+            const response = await fetch(healthUrl);
+            const data = await response.json();
+            console.log(`[Keep-Alive ⏰] Pinged ${healthUrl} - Status: ${response.status} (${data.status})`);
+        } catch (err) {
+            console.warn(`[Keep-Alive ⚠️] Ping warning:`, err.message);
+        }
+    }, SEVEN_MINUTES);
+};
 
 const connectDB = async () => {
     try {
@@ -64,6 +93,8 @@ const startServer = async () => {
     const port = process.env.PORT || 5000;
     app.listen(port, () => {
         console.log(`🚀 Server is running on port ${port}`);
+        console.log(`💚 Health check active at http://localhost:${port}/api/health`);
+        setupKeepAlive(port);
     });
 };
 
