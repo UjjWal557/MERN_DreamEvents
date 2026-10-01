@@ -1,10 +1,9 @@
 services:
   - type: web
-    name: dreamevents-backend
+    name: dreamevents
     runtime: node
-    rootDir: server
-    buildCommand: npm install
-    startCommand: node index.js
+    buildCommand: npm run install:all && npm run build --prefix client
+    startCommand: npm run start --prefix server
     envVars:
       - key: PORT
         value: 5000
@@ -22,3 +21,4 @@ services:
         sync: false
       - key: FRONTEND_URL
         sync: false
+
