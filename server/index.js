@@ -29,6 +29,9 @@ app.use(cors({
 
 app.use(express.json());
 
+const path = require('path');
+const fs = require('fs');
+
 // Health check route for uptime monitoring & Render keep-alive
 app.get(['/api/health', '/health'], (req, res) => {
     res.status(200).json({
@@ -43,6 +46,25 @@ app.get(['/api/health', '/health'], (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/bookings', bookingRoutes);
+
+// Serve static client assets if built, or present API root info
+const clientDistPath = path.join(__dirname, '../client/dist');
+if (fs.existsSync(clientDistPath)) {
+    app.use(express.static(clientDistPath));
+    app.get('*', (req, res, next) => {
+        if (req.path.startsWith('/api')) return next();
+        res.sendFile(path.join(clientDistPath, 'index.html'));
+    });
+} else {
+    app.get('/', (req, res) => {
+        res.status(200).json({
+            message: '🎉 Welcome to DreamEvents API Server',
+            healthUrl: '/api/health',
+            eventsUrl: '/api/events',
+            status: 'online'
+        });
+    });
+}
 
 const setupKeepAlive = (port) => {
     const SEVEN_MINUTES = 7 * 60 * 1000;
